@@ -1,36 +1,37 @@
 package com.example.daniel.forecastapp;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Looper;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.location.Location;
-import android.net.Uri;
 import android.widget.Toast;
 
+import com.example.daniel.forecastapp.adapters.CustomAdapter;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -53,15 +54,34 @@ public class MainActivity extends AppCompatActivity {
     private TextView mLongitudeText;
 
     private static TextView text;
+    private ListView listView;
+    private LocationCallback mLocationCallback;
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         text = findViewById(R.id.textconnect);
+        listView = findViewById(R.id.list);
+
         mLatitudeText = findViewById((R.id.textViewLat));
         mLongitudeText = findViewById((R.id.textViewlng));
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+
+    }
+
+    public void removeLocationUpdates() {
+        Log.i("Daniel es gay", "Removing location updates");
+        try {
+            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+//            Utils.setRequestingLocationUpdates(this, false);
+//            stopSelf();
+        } catch (SecurityException unlikely) {
+//            Utils.setRequestingLocationUpdates(this, true);
+//            Log.e(TAG, "Lost location permission. Could not remove updates. " + unlikely);
+        }
     }
 
     @Override
@@ -118,7 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
                 List<HourConditions> hours = response.body().getHourlyForecast().getHourlyConditionsList();
                 System.out.println(hours);
-
+                CustomAdapter customAdapter = new CustomAdapter(MainActivity.this, R.layout.item_list, hours);
+                listView.setAdapter(customAdapter);
 
             }
 
@@ -131,7 +152,8 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressWarnings("MissingPermission")
     public void getLastLocation() {
-        LocationRequest request = new LocationRequest();
+
+
         mFusedLocationClient.getLastLocation()
                 .addOnCompleteListener(this, new OnCompleteListener<Location>() {
                     @Override
@@ -142,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                             mLatitudeText.setText("Lat" + mLastLocation.getLatitude());
                             mLongitudeText.setText(
                                     "Lng" +
-                                    mLastLocation.getLongitude());
+                                            mLastLocation.getLongitude());
                             System.out.println("LAT" + mLastLocation.getLatitude());
                             System.out.println("LNG" + mLastLocation.getLongitude());
                         } else {
@@ -151,6 +173,32 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+
+        mFusedLocationClient.getLastLocation();
+
+        LocationRequest mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(1000 * 30);
+        mLocationRequest.setFastestInterval(1000 * 5);
+
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+
+                mLastLocation = locationResult.getLastLocation();
+
+                mLatitudeText.setText("Lat" + mLastLocation.getLatitude());
+                mLongitudeText.setText(
+                        "Lng" +
+                                mLastLocation.getLongitude());
+                System.out.println("LAT" + mLastLocation.getLatitude());
+                System.out.println("LNG" + mLastLocation.getLongitude());
+                removeLocationUpdates();
+            }
+        };
+
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
 
     private void resultLocation() {
@@ -166,20 +214,20 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkPermissions() {
         int permissionState = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION);
+                Manifest.permission.ACCESS_FINE_LOCATION);
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
 
     private void startLocationPermissionRequest() {
         ActivityCompat.requestPermissions(MainActivity.this,
-                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                 REQUEST_PERMISSIONS_REQUEST_CODE);
     }
 
     private void requestPermissions() {
         boolean shouldProvideRationale =
                 ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION);
+                        Manifest.permission.ACCESS_FINE_LOCATION);
 
         // Provide an additional rationale to the user. This would happen if the user denied the
         // request previously, but didn't check the "Don't ask again" checkbox.

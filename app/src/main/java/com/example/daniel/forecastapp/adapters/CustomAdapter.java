@@ -1,4 +1,4 @@
-package com.example.daniel.forecastapp;
+package com.example.daniel.forecastapp.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,6 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import com.example.daniel.forecastapp.HourConditions;
+import com.example.daniel.forecastapp.R;
 
 import java.util.List;
 
@@ -15,12 +18,15 @@ import java.util.List;
 
 public class CustomAdapter extends ArrayAdapter<HourConditions> {
 
+    private int resView;
+
     public CustomAdapter(Context context, int textViewResourceId) {
         super(context, textViewResourceId);
     }
 
     public CustomAdapter(Context context, int resource, List<HourConditions> items) {
         super(context, resource, items);
+        resView = resource;
     }
 
     @Override
@@ -31,16 +37,18 @@ public class CustomAdapter extends ArrayAdapter<HourConditions> {
         if (v == null) {
             LayoutInflater vi;
             vi = LayoutInflater.from(getContext());
-            v = vi.inflate(R.layout.activity_main, null);
+            v = vi.inflate(resView, null);
         }
 
         HourConditions p = getItem(position);
 
         if (p != null) {
-            TextView tt1 = (TextView) v.findViewById(R.id.cheese_name);
+            TextView tt = v.findViewById(R.id.text);
+            TextView tt1 = v.findViewById(R.id.text1);
 
             if (tt1 != null) {
-                tt1.setText(p.getSummary());
+                tt.setText(p.getSummary());
+                tt1.setText(String.valueOf(p.getTime()));
             }
         }
 

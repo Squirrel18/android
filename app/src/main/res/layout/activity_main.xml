@@ -8,6 +8,13 @@
     tools:context="com.example.daniel.forecastapp.MainActivity"
     tools:layout_editor_absoluteY="81dp">
 
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </ListView>
+
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
@@ -72,14 +79,16 @@
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/layout"
-        android:orientation="vertical" android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
         <TextView
+            android:id="@+id/cheese_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Large Text"
-            android:id="@+id/cheese_name" />
+            android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
